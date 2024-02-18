@@ -1,0 +1,15 @@
+**/.nfs*
+**/*~
+**/#*#
+**/.#*
+etc
+var
+elpa
+projectile-bookmarks.eld
+tramp
+.cache
+.cask
+eln-cache
+transient
+bookmarks
+projectile.cache
