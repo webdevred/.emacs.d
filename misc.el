@@ -34,20 +34,20 @@
 
 ;; i had some problems with treemacs and linenumbers, this solves it
 (add-hook 'after-init-hook (lambda ())
-          (let ((treemacs-window (treemacs-get-local-window)))
-            (if treemacs-window
-                (with-current-buffer (window-buffer treemacs-window)
-                  (progn
-                    (display-line-numbers-mode 0))))))
-
+          (if (fboundp 'treemacs-get-local-window)
+              (let ((treemacs-window (treemacs-get-local-window)))
+                (if treemacs-window
+                    (with-current-buffer (window-buffer treemacs-window)
+                        (display-line-numbers-mode 0))))))
 
 ;; disable line numbers for theese modes
-(dolist (mode '(org-mode-hook
+(dolist (mode '(completion-list-mode-hook
+                calc-mode-hook
+                Info-mode-hook
+                org-mode-hook
                 term-mode-hook
                 shell-mode-hook
                 eshell-mode-hook
-                calc-mode-hook
-                help-mode-hook
                 special-mode-hook
                 treemacs-mode))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
@@ -63,7 +63,8 @@
 (menu-bar-mode -1)
 
 (if window-system
-    (tool-bar-mode -1)
+    (progn (tool-bar-mode -1)
+           (scroll-bar-mode -1))
   )
 
 ; y/n is better than yes/no

@@ -1,29 +1,42 @@
+;; -*- lexical-binding: t; -*-
 (deftheme cozy-pink
   "A simple theme for Emacs.")
 
 (setq-default nlinum-format " %d ")
 
 (let ((class '((class color) (min-colors 256)))
-      (bg1 "#000000")
-      (bg2 "#666666")
-      (fg1 "#ffaaff")
-      (fg2 "#ff55ff")
+      (black "#000000")
+      (gray "#666666")
+      (pink "#ffaaff")
+      (purple "#ff55ff")
       )
   (custom-theme-set-faces
    'cozy-pink
 
-   `(default ((,class (:foreground ,fg1 :background ,bg1))))
+   `(default ((,class (:foreground ,pink :background ,black))))
 
-   `(mode-line ((,class (:foreground ,fg1 :background ,bg2))))
-   `(mode-line-inactive ((,class (:foreground ,fg1 :background ,bg1))))
+   `(mode-line ((,class (:foreground ,black :background ,pink))))
+   `(mode-line-inactive ((,class (:foreground ,black :background ,purple))))
 
-   `(line-number ((,class (:foreground ,fg1))))
-   `(match ((,class (:background ,bg2))))
-   `(isearch ((,class (:foreground ,fg2 :background ,bg2))))
+   `(line-number ((,class (:foreground ,pink))))
+   `(match ((,class (:background ,gray))))
+   `(isearch ((,class (:foreground ,purple :background ,gray))))
 
-   `(cursor ((,class (:foreground ,fg1 :background ,bg2))))
-   `(region ((,class (:background ,bg2))))
-   ))
+   `(cursor ((,class (:foreground ,pink :background ,gray))))
+   `(region ((,class (:background ,gray))))
+   )
+
+  (if (facep 'treemacs-root-face)
+    (custom-theme-set-faces
+     'cozy-pink
+     `(treemacs-root-face ((,class (:foreground ,pink)))))
+    )
+  (if (facep 'which-func)
+    (custom-theme-set-faces
+     'cozy-pink
+     `(which-func ((,class (:foreground ,pink)))))
+    )
+  )
 
 (provide-theme 'cozy-pink)
 (provide 'cozy-pink-theme)
