@@ -77,7 +77,7 @@
 
 (use-package which-func
   :custom-face
-  (which-func-face ((t (:foreground pink))))
+  (which-func-face ((t (:foreground ,pink))))
   :init
   (which-function-mode 1)
   :hook (magit-status . (lambda () (which-function-mode 0))))
@@ -90,4 +90,4 @@
 
 (load-config-file "misc.el")
 
-
+(load-theme 'cozy-pink t)

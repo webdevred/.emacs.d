@@ -10,7 +10,7 @@
  '(inhibit-splash-screen t)
  '(inhibit-startup-screen t)
  '(inhibit-startup-message t)
- '(indent-tabs-mode ni)
+ '(indent-tabs-mode nil)
  ;; disable scratch message
  '(initial-scratch-message "")
  '(split-width-threshold 0)
@@ -19,17 +19,6 @@
  '(truncate-lines t)
  '(ring-bell-function #'ignore)
  '(warning-minimum-level :error))
-
-(custom-theme-set-faces
- 'my-theme
- '(line-number (t ((:foreground pink))))
- '(mode-line (t ((:foreground pink))))
- '(mode-line (t ((:background "#3b3b3e"))))
- '(mode-line-inactive (t ((:foreground ddarker-pink))))
- '(mode-line-inactive (t ((:background "#3b3b3e"))))
- '(match (t ((:foreground pink))))
- '(region (t ((:foreground pink))))
- '(cursor (t ((:foreground pink)))))
 
 ;; Major mode hooks
 (add-hook 'emacs-lisp-mode-hook
@@ -40,18 +29,28 @@
 (add-hook 'text-mode-hook #'visual-line-mod)
 
 ;; set up column numbers
-(column-number-mode 1) 
+(column-number-mode 1)
 (global-display-line-numbers-mode 1)
+
+;; i had some problems with treemacs and linenumbers, this solves it
+(add-hook 'after-init-hook (lambda ())
+          (let ((treemacs-window (treemacs-get-local-window)))
+            (if treemacs-window
+                (with-current-buffer (window-buffer treemacs-window)
+                  (progn
+                    (display-line-numbers-mode 0))))))
+
+
 ;; disable line numbers for theese modes
 (dolist (mode '(org-mode-hook
-                  term-mode-hook
-                  shell-mode-hook
-                  eshell-mode-hook
-                  treemacs-mode-hook
-                  calc-mode-hook
-                  help-mode-hook
-                  special-mode-hook))
-              (add-hook mode (lambda () (display-line-numbers-mode 0))))
+                term-mode-hook
+                shell-mode-hook
+                eshell-mode-hook
+                calc-mode-hook
+                help-mode-hook
+                special-mode-hook
+                treemacs-mode))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ; deb key bindings
 (global-set-key (kbd "C-c b") (lambda () (interactive) (projectile-switch-to-project-buffer)))
@@ -70,7 +69,7 @@
 ; y/n is better than yes/no
 (fset 'yes-or-no-p 'y-or-n-p)
 
-(;; allow me to go other windows
+;; allow me to go other windows
 (windmove-default-keybindings)
 
 (org-babel-do-load-languages
