@@ -1,4 +1,4 @@
-;;; package --- Summary: init file
+;;; package --- Summary: init file  -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 
@@ -20,9 +20,6 @@
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-
-(setq pink "#ffaaff")
-(setq darker-pink "#ffbbff")
 
 (use-package no-littering
   :demand t)
@@ -55,8 +52,6 @@
   :hook (after-init . global-company-mode))
 
 (use-package treemacs
-  :custom-face
-  (treemacs-root-face ((t (:foreground "#ddaadd"))))
   :init
   (setq treemacs-no-png-images t)
   :bind
@@ -76,12 +71,9 @@
   (setq projectile-use-git-grep t))
 
 (use-package which-func
-  :custom-face
-  (which-func-face ((t (:foreground ,pink))))
   :init
   (which-function-mode 1)
   :hook (magit-status . (lambda () (which-function-mode 0))))
-
 
 (defun load-config-file (filename)
   "load file name in this config"
