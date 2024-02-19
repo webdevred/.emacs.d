@@ -1,0 +1,5 @@
+* .emacs.d
+
+This is my GNU/Emacs configuration.
+
+My favorite modes includes haskell-mode, Treemacs and Magit.
