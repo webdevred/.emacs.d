@@ -20,37 +20,57 @@
  '(ring-bell-function #'ignore)
  '(warning-minimum-level :error))
 
+
+;; stuff for writing elisp-koans
+(defun get-quoted-form-at-point ()
+  "Return the quoted form from the current point."
+  (save-excursion
+    (let ((code-end (point))
+          (code-start nil))
+      (while (and (not code-start) (re-search-backward "\n(" nil t))
+        (setq code-start (match-end 0)))
+      (when code-start
+        (read (buffer-substring-no-properties (- code-start 1) code-end))))))
+
+(defun get-test-name (test-def)
+    (cadr test-def))
+
+(defun run-elisp-koan-test ()
+  "run test"
+  (interactive)
+  (if (and (bound-and-true-p projectile-mode) (s-ends-with-p "elisp-koans/" (projectile-project-root)))
+      (let ((test-def (get-quoted-form-at-point)))
+            (load-file (concat (projectile-project-root) "elisp-koans.el"))
+            (eval test-def)
+            (elisp-koans/run-test (get-test-name test-def)))
+    (princ "You are not in the elisp-koans repo")))
+
 ;; Major mode hooks
 (add-hook 'emacs-lisp-mode-hook
   (lambda ()
     ;; Use spaces, not tabs.
-    (setq indent-tabs-mode nil)))
+    (progn
+      (setq indent-tabs-mode nil)
+      (define-key emacs-lisp-mode-map (kbd "C-c C-r") #'run-elisp-koan-test))
+    ))
+
+(defun do-calc-clear-calculations ()
+  (when (not (equal (calc-stack-size) 0))
+    (calc-pop (calc-stack-size))))
+
+(defun calc-clear-calculations ()
+  (interactive)
+  (when (equal major-mode 'calc-mode)
+    (do-calc-clear-calculations)))
+
+(add-hook 'calc-mode-hook
+          (lambda () (define-key calc-mode-map (kbd "C-c k") #'calc-clear-calculations)))
 
 (add-hook 'text-mode-hook #'visual-line-mod)
 
 ;; set up column numbers
 (column-number-mode 1)
-(global-display-line-numbers-mode 1)
-
-;; i had some problems with treemacs and linenumbers, this solves it
-(add-hook 'after-init-hook (lambda ())
-          (if (fboundp 'treemacs-get-local-window)
-              (let ((treemacs-window (treemacs-get-local-window)))
-                (if treemacs-window
-                    (with-current-buffer (window-buffer treemacs-window)
-                        (display-line-numbers-mode 0))))))
-
-;; disable line numbers for theese modes
-(dolist (mode '(completion-list-mode-hook
-                calc-mode-hook
-                Info-mode-hook
-                org-mode-hook
-                term-mode-hook
-                shell-mode-hook
-                eshell-mode-hook
-                special-mode-hook
-                treemacs-mode))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+(add-hook 'prog-mode-hook (lambda () (display-line-numbers-mode 1)))
 
 ; deb key bindings
 (global-set-key (kbd "C-c b") (lambda () (interactive) (projectile-switch-to-project-buffer)))
