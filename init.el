@@ -75,6 +75,9 @@
   (which-function-mode 1)
   :hook (magit-status . (lambda () (which-function-mode 0))))
 
+(use-package rainbow-delimiters
+  :hook (prog-mode . #'rainbow-delimiters-mode))
+
 (defun load-config-file (filename)
   "load file name in this config"
   (let ((filepath (concat (expand-file-name (file-name-directory user-init-file)) filename)))
