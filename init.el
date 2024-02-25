@@ -7,10 +7,15 @@
 
 (require 'package)
 
+(defcustom emacsd-prefer-stable
+  nil
+  "Prefer stable packages"
+  :type 'boolean
+  :group 'emacsd)
+
 (setq package-archives
-   '(("gnu" . "https://elpa.gnu.org/packages/")
-     ("melpa" . "https://melpa.org/packages/")
-     ("melpa-stable" . "https://stable.melpa.org/packages/")))
+   `(("gnu" . "https://elpa.gnu.org/packages/")
+     ("melpa" . ,(if (bound-and-true-p emacsd-prefer-stable) "https://melpa.org/packages/"  "https://stable.melpa.org/packages/"))))
 
 (setq use-package-always-ensure t)
 (setq use-package-always-defer t)
@@ -22,13 +27,13 @@
   (package-install 'use-package))
 
 (use-package no-littering
+  :ensure t
   :demand t)
 
 (use-package diminish)
 
 (use-package magit
   :ensure t
-  :pin melpa-stable
   :hook (magit-status . (lambda () (which-function-mode 0))))
 
 (use-package undo-tree

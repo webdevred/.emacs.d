@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (custom-set-variables
  ;; set garbaǵe collection high to increase speed
  '(gc-cons-threshold 100000000)
