@@ -67,7 +67,7 @@
 (add-hook 'calc-mode-hook
           (lambda () (define-key calc-mode-map (kbd "C-c k") #'calc-clear-calculations)))
 
-(add-hook 'text-mode-hook #'visual-line-mod)
+(add-hook 'text-mode-hook #'visual-line-mode)
 
 ;; set up column numbers
 (column-number-mode 1)

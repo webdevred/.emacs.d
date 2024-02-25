@@ -43,7 +43,8 @@
 
 (use-package php-mode)
 
-(use-package web-mode)
+(use-package web-mode
+  :mode (("\\.html?$"  . html-mode)))
 
 (use-package haskell-mode
   :mode (("\\.hs$" . haskell-mode))
