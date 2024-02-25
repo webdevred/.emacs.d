@@ -78,6 +78,14 @@
 (use-package rainbow-delimiters
   :hook (prog-mode . #'rainbow-delimiters-mode))
 
+(use-package ido
+  :config
+  '((ido-enable-flex-matching t)
+    (ido-everywhere t)
+    (ido-ignore-files '("\\`\\.nfs" "\\`#.*" "\\`.*~")))
+  :init
+  (ido-mode 1))
+
 (defun load-config-file (filename)
   "load file name in this config"
   (let ((filepath (concat (expand-file-name (file-name-directory user-init-file)) filename)))
