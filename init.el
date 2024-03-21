@@ -7,15 +7,21 @@
 
 (require 'package)
 
-(defcustom emacsd-prefer-stable
+(defcustom emacsd-prefer-melpa-stable
   nil
   "Prefer stable packages"
   :type 'boolean
   :group 'emacsd)
 
 (setq package-archives
-   `(("gnu" . "https://elpa.gnu.org/packages/")
-     ("melpa" . ,(if (bound-and-true-p emacsd-prefer-stable) "https://melpa.org/packages/"  "https://stable.melpa.org/packages/"))))
+      (if emacsd-prefer-melpa-stable
+          '(("gnu" . "https://elpa.gnu.org/packages/")
+            ("melpa-stable" . "https://stable.melpa.org/packages/")
+            ("melpa" . "https://melpa.org/packages/"))
+        '(("gnu" . "https://elpa.gnu.org/packages/")
+          ("melpa" . "https://melpa.org/packages/")
+          ("melpa-stable" . "https://stable.melpa.org/packages/"))))
+
 
 (setq use-package-always-ensure t)
 (setq use-package-always-defer t)
@@ -37,6 +43,8 @@
   :hook (magit-status . (lambda () (which-function-mode 0))))
 
 (use-package undo-tree
+  :config
+  (setq undo-tree-auto-save-history 5)
   :diminish 'undo-tree-mode
   :init
   (global-undo-tree-mode))
@@ -44,7 +52,17 @@
 (use-package php-mode)
 
 (use-package web-mode
-  :mode (("\\.html?$"  . html-mode)))
+  :mode
+  (("\\.lucius$"  . css-mode)
+   ("\\.julius$"  . javascript-mode)
+   ("\\.html?$"  . html-mode)))
+
+(use-package hamlet-mode
+  :mode
+  (("\\.hamlet$"  . hamlet-mode)))
+
+(use-package yaml-mode
+  :mode (("\\.ya?ml$" . yaml-mode)))
 
 (use-package haskell-mode
   :mode (("\\.hs$" . haskell-mode))
@@ -81,14 +99,15 @@
   (which-function-mode 1)
   :hook (magit-status . (lambda () (which-function-mode 0))))
 
-(use-package rainbow-delimiters
-  :hook (prog-mode . #'rainbow-delimiters-mode))
+(use-package rainbow-mode
+  :hook prog-mode)
 
 (use-package ido
   :config
-  '((ido-enable-flex-matching t)
-    (ido-everywhere t)
-    (ido-ignore-files '("\\`\\.nfs" "\\`#.*" "\\`.*~")))
+  (setq
+   ido-enable-flex-matching t
+   ido-everywhere t
+   ido-ignore-files '("\\`\\.nfs" "\\`#.*" "\\`.*~"))
   :init
   (ido-mode 1))
 
