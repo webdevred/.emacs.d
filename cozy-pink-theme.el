@@ -34,7 +34,7 @@
   (if (facep 'which-func)
     (custom-theme-set-faces
      'cozy-pink
-     `(which-func ((,class (:foreground ,pink)))))
+     `(which-func ((,class (:foreground ,black)))))
     )
   )
 
