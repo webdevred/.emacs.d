@@ -26,12 +26,8 @@
 (defun get-quoted-form-at-point ()
   "Return the quoted form from the current point."
   (save-excursion
-    (let ((code-end (point))
-          (code-start nil))
-      (while (and (not code-start) (re-search-backward "\n(" nil t))
-        (setq code-start (match-end 0)))
-      (when code-start
-        (read (buffer-substring-no-properties (- code-start 1) code-end))))))
+    (when (re-search-backward "^(" nil t)
+          (form-at-point))))
 
 (defun get-test-name (test-def)
     (cadr test-def))
@@ -41,9 +37,11 @@
   (interactive)
   (if (and (bound-and-true-p projectile-mode) (s-ends-with-p "elisp-koans/" (projectile-project-root)))
       (let ((test-def (get-quoted-form-at-point)))
-            (load-file (concat (projectile-project-root) "elisp-koans.el"))
-            (eval test-def)
-            (elisp-koans/run-test (get-test-name test-def)))
+        (if (not test-def)
+            (message "not valid sexp")
+          (load-file (concat (projectile-project-root) "elisp-koans.el"))
+          (eval test-def)
+          (elisp-koans/run-test (get-test-name test-def))))
     (princ "You are not in the elisp-koans repo")))
 
 ;; Major mode hooks
