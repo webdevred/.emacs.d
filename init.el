@@ -7,20 +7,10 @@
 
 (require 'package)
 
-(defcustom emacsd-prefer-melpa-stable
-  nil
-  "Prefer stable packages"
-  :type 'boolean
-  :group 'emacsd)
-
 (setq package-archives
-      (if emacsd-prefer-melpa-stable
-          '(("gnu" . "https://elpa.gnu.org/packages/")
-            ("melpa-stable" . "https://stable.melpa.org/packages/")
-            ("melpa" . "https://melpa.org/packages/"))
         '(("gnu" . "https://elpa.gnu.org/packages/")
           ("melpa" . "https://melpa.org/packages/")
-          ("melpa-stable" . "https://stable.melpa.org/packages/"))))
+          ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
 
 (setq use-package-always-ensure t)
@@ -48,6 +38,19 @@
   :diminish 'undo-tree-mode
   :init
   (global-undo-tree-mode))
+
+(defun start-python-lsp ()
+  "Check if Python LSP server is installed and start LSP."
+  (interactive)
+  (let ((lsp-server (executable-find "pylsp"))) ;; Change to "pyright" if using Pyright
+    (if (and lsp-server (file-executable-p lsp-server))
+        (lsp-deferred)
+      (message "Python LSP server not found. Please install 'python3-pylsp' or 'pyright'."))))
+
+(use-package lsp-mode
+  :ensure t
+  :hook (python-mode . start-python-lsp)
+  :commands (lsp lsp-deferred))
 
 (use-package php-mode)
 
