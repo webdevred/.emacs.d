@@ -67,12 +67,14 @@
 (use-package yaml-mode
   :mode (("\\.ya?ml$" . yaml-mode)))
 
+(use-package hindent)
+
 (use-package haskell-mode
   :mode (("\\.hs$" . haskell-mode))
   :hook (haskell-mode-hook . #'hindent-mode)
   :config
   '((haskell-tags-on-save t)
-    (haskell-ormolu-on-save t)))
+    (hindent-reformat-buffer-on-save t)))
 
 (use-package company
   :diminish 'company-mode
