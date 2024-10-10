@@ -26,7 +26,11 @@
   :ensure t
   :demand t)
 
-(use-package diminish)
+(use-package diminish
+  :init
+  (diminish 'auto-revert-mode)
+  (diminish 'rainbow-mode)
+  (diminish 'eldoc-mode))
 
 (use-package magit
   :ensure t
@@ -39,19 +43,28 @@
   :init
   (global-undo-tree-mode))
 
-(defun start-python-lsp ()
-  "Check if Python LSP server is installed and start LSP."
-  (interactive)
-  (let ((lsp-server (executable-find "pylsp"))) ;; Change to "pyright" if using Pyright
-    (if (and lsp-server (file-executable-p lsp-server))
-        (lsp-deferred)
-      (message "Python LSP server not found. Please install 'python3-pylsp' or 'pyright'."))))
+(use-package pyvenv)
 
 (use-package lsp-mode
-  :ensure t
-  :hook (python-mode . start-python-lsp)
-  :commands (lsp lsp-deferred))
+  :hook (prog-mode . lsp-deferred)
+  :custom
+  ((lsp-auto-guess-root t)
+   (lsp-warn-no-matched-clients nil))
+  :commands lsp lsp-deferred)
 
+(defun is-project-using-rye ()
+  (let ((venv-dir (concat (projectile-project-root) ".venv"))
+        (pyproject (concat (projectile-project-root) "pyproject.toml")))
+    (and (projectile-project-p) (eq major-mode 'python-mode) (file-exists-p venv-dir) (file-exists-p pyproject))))
+
+(defun lsp-use-ruff-if-available (orig-fun &rest args)
+  "Advice to wrap around `lsp` for handling Python package manager Rye and its language server Ruff."
+  (if (is-project-using-rye)
+      (let ((lsp-enabled-clients '(list ruff)))
+        (apply orig-fun args))
+    (apply orig-fun args)))
+
+(advice-add 'lsp :around #'lsp-use-ruff-if-available)
 (use-package php-mode)
 
 (use-package web-mode
@@ -91,6 +104,24 @@
         ("C-x t B"   . treemacs-bookmark)
         ("C-x t C-t" . treemacs-find-file)
         ("C-x t M-t" . treemacs-find-tag)))
+
+(defun activate-project-venv (orig-fun &rest args)
+  "Advice to wrap around `lsp` for activating the venv for a Python project if one exists."
+  (let ((old-project (or (treemacs--find-project-for-buffer (buffer-file-name (current-buffer))) 
+                         (treemacs-project-at-point))))
+    (apply orig-fun args)
+    (let* ((new-project (treemacs--find-project-for-buffer (buffer-file-name (current-buffer))))
+           (old-project-path (when old-project (treemacs-project->path old-project)))
+           (new-project-path (when new-project (treemacs-project->path new-project)))
+           (venv-dir (concat (file-name-as-directory new-project-path) ".venv")))
+      (unless (string= old-project-path new-project-path)
+        (pyvenv-deactivate)
+        (when (and (file-exists-p (concat (file-name-as-directory new-project-path) "pyproject.toml"))
+                   (file-exists-p venv-dir))
+          (pyvenv-activate venv-dir)
+          (message "Activated venv: %s" venv-dir))))))
+
+(advice-add 'find-file :around #'activate-project-venv)
 
 (use-package projectile
   :diminish 'projectile-mode
