@@ -26,7 +26,11 @@
   :ensure t
   :demand t)
 
-(use-package diminish)
+(use-package diminish
+  :init
+  (diminish 'auto-revert-mode)
+  (diminish 'rainbow-mode)
+  (diminish 'eldoc-mode))
 
 (use-package magit
   :ensure t
@@ -39,19 +43,30 @@
   :init
   (global-undo-tree-mode))
 
-(defun start-python-lsp ()
-  "Check if Python LSP server is installed and start LSP."
-  (interactive)
-  (let ((lsp-server (executable-find "pylsp"))) ;; Change to "pyright" if using Pyright
-    (if (and lsp-server (file-executable-p lsp-server))
-        (lsp-deferred)
-      (message "Python LSP server not found. Please install 'python3-pylsp' or 'pyright'."))))
+(use-package pyvenv)
 
 (use-package lsp-mode
-  :ensure t
-  :hook (python-mode . start-python-lsp)
-  :commands (lsp lsp-deferred))
+  :hook ((prog-mode . lsp-deferred)
+         (save-buffer . (lambda () (when (lsp-workspaces) (lsp-restart-workspace)))))
+  :custom
+  ((lsp-auto-guess-root t)
+   (lsp-warn-no-matched-clients nil))
+  :commands lsp lsp-deferred)
 
+(defun is-project-using-rye ()
+  (let ((venv-dir (concat (projectile-project-root) ".venv"))
+        (pyproject (concat (projectile-project-root) "pyproject.toml")))
+    (and (projectile-project-p) (eq major-mode 'python-mode) (file-exists-p venv-dir) (file-exists-p pyproject))))
+
+(defun lsp-use-ruff-if-available (orig-fun &rest args)
+  "Advice to wrap around `lsp` for handling Python package manager Rye and its language server Ruff."
+  (if (is-project-using-rye)
+      (let ((lsp-enabled-clients '(ruff))
+            (lsp-ruff-server-command '("rye" "run" "ruff" "server")))
+        (apply orig-fun args))
+    (apply orig-fun args)))
+
+(advice-add 'lsp :around #'lsp-use-ruff-if-available)
 (use-package php-mode)
 
 (use-package web-mode
@@ -77,8 +92,16 @@
     (hindent-reformat-buffer-on-save t)))
 
 (use-package company
+  :after lsp-mode
   :diminish 'company-mode
-  :hook (after-init . global-company-mode))
+  :hook (prog-mode . company-mode)
+  :bind (:map company-active-map
+         ("<tab>" . company-complete-selection))
+        (:map lsp-mode-map
+         ("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
 
 (use-package treemacs
   :init
