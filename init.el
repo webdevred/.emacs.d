@@ -56,17 +56,38 @@
 (defun is-project-using-rye ()
   (let ((venv-dir (concat (projectile-project-root) ".venv"))
         (pyproject (concat (projectile-project-root) "pyproject.toml")))
-    (and (projectile-project-p) (eq major-mode 'python-mode) (file-exists-p venv-dir) (file-exists-p pyproject))))
+    (and (projectile-project-p) (file-exists-p venv-dir) (file-exists-p pyproject))))
 
 (defun lsp-use-ruff-if-available (orig-fun &rest args)
   "Advice to wrap around `lsp` for handling Python package manager Rye and its language server Ruff."
-  (if (is-project-using-rye)
+  (if (and (is-project-using-rye) (eq major-mode 'python-mode))
       (let ((lsp-enabled-clients '(ruff))
             (lsp-ruff-server-command '("rye" "run" "ruff" "server")))
         (apply orig-fun args))
     (apply orig-fun args)))
 
 (advice-add 'lsp :around #'lsp-use-ruff-if-available)
+
+(defun run-rye-tests ()
+  "Run tests and show results in buffer"
+  (interactive)
+  (if (is-project-using-rye)
+      (let* ((output-buffer (get-buffer-create (format "*%s-rye-tests*" (projectile-project-name))))
+             (process (start-process-shell-command "rye-tests" output-buffer "rye test -- --color=yes")))
+        (with-current-buffer (process-buffer process)
+          (setq buffer-read-only t))
+        (set-process-filter
+         process
+         (lambda (proc output)
+           (with-current-buffer (process-buffer proc)
+             (let ((buffer-read-only nil)
+                   (start-point (goto-char (point-max))))
+               (insert (replace-regexp-in-string "\r" "\n" output))
+               (ansi-color-apply-on-region start-point (point-max))
+               (goto-char (point-max))))))
+        (switch-to-buffer output-buffer))
+    (error "not using rye in project")))
+
 (use-package php-mode)
 
 (use-package web-mode
