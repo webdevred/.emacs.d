@@ -9,8 +9,7 @@
 
 (setq package-archives
         '(("gnu" . "https://elpa.gnu.org/packages/")
-          ("melpa" . "https://melpa.org/packages/")
-          ("melpa-stable" . "https://stable.melpa.org/packages/")))
+          ("melpa" . "https://melpa.org/packages/")))
 
 
 (setq use-package-always-ensure t)
@@ -60,7 +59,7 @@
 
 (defun lsp-use-ruff-if-available (orig-fun &rest args)
   "Advice to wrap around `lsp` for handling Python package manager Rye and its language server Ruff."
-  (if (and (is-project-using-rye) (eq major-mode 'python-mode))
+  (if (and  (eq major-mode 'python-mode) (is-project-using-rye))
       (let ((lsp-enabled-clients '(ruff))
             (lsp-ruff-server-command '("rye" "run" "ruff" "server")))
         (apply orig-fun args))
@@ -103,14 +102,17 @@
 (use-package yaml-mode
   :mode (("\\.ya?ml$" . yaml-mode)))
 
-(use-package hindent)
-
 (use-package haskell-mode
   :mode (("\\.hs$" . haskell-mode))
-  :hook (haskell-mode-hook . #'hindent-mode)
+  :hook ((haskell-mode-hook . #'haskell-collapse-mode)
+         (haskell-mode-hook . #'haskell-doc-mode)
+         (haskell-mode-hook . #'haskell-indent-mode)
+         (haskell-mode-hook . #'interactive-haskell-mode))
   :config
   '((haskell-tags-on-save t)
-    (hindent-reformat-buffer-on-save t)))
+    (hindent-reformat-buffer-on-save t)
+    (haskell-process-show-debug-tips)
+    (haskell-doc-prettify-types t)))
 
 (use-package company
   :after lsp-mode
